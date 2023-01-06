@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vector3D {
     pub x: f64,
     pub y: f64,
@@ -56,6 +56,13 @@ impl Mul<f64> for Vector3D {
     }
 }
 
+impl Mul<Vector3D> for f64 {
+    type Output = Vector3D;
+    fn mul(self, rhs: Vector3D) -> Self::Output {
+        rhs * self
+    }
+}
+
 impl Neg for Vector3D {
     type Output = Self;
     fn neg(self) -> Self::Output {
@@ -63,7 +70,7 @@ impl Neg for Vector3D {
     }
 }
 
-impl Sub<Vector3D> for Vector3D {
+impl Sub<Self> for Vector3D {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self::Output {
         Vector3D::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
@@ -92,6 +99,7 @@ mod tests {
         assert_eq!(new_vector.x, 7.26);
         assert_eq!(new_vector.y, 14.52);
         assert_eq!(new_vector.z, 16.94);
+        assert_eq!(new_vector, 2.2 * vector);
     }
 
     #[test]
