@@ -8,13 +8,17 @@ pub struct Vector3D {
 }
 
 impl Vector3D {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Self { x, y, z }
+    pub fn dot(&self, rhs: &Vector3D) -> f64 {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
     pub fn magnitude(&self) -> f64 {
         let sum = f64::powi(self.x, 2) + f64::powi(self.y, 2) + f64::powi(self.z, 2);
         sum.sqrt()
+    }
+
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z }
     }
 
     pub fn normalize(self) -> Self {
@@ -153,5 +157,16 @@ mod tests {
         assert_approx_eq!(vector3.x, 1.1);
         assert_approx_eq!(vector3.y, 1.1);
         assert_approx_eq!(vector3.z, 1.1);
+    }
+
+    #[test]
+    fn dot_product() {
+        let vector1 = Vector3D::new(2.2, 2.2, 2.2);
+        let vector2 = Vector3D::new(1.1, 1.1, 1.1);
+        let product = vector1.dot(&vector2);
+        assert_approx_eq!(product, 7.26);
+
+        let squared_magnitude = vector1.dot(&vector1);
+        assert_approx_eq!(squared_magnitude, f64::powi(vector1.magnitude(), 2));
     }
 }
