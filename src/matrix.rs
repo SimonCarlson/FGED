@@ -1,5 +1,6 @@
 use crate::Vector3D;
 
+use std::fmt::Display;
 use std::ops::{Add, Index, Mul, Sub};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -32,6 +33,15 @@ impl Add<Self> for Matrix3D {
        Matrix3D::new(self[[0,0]] + rhs[[0,0]], self[[0,1]] + rhs[[0,1]], self[[0,2]] + rhs[[0,2]],
         self[[1,0]] + rhs[[1,0]], self[[1,1]] + rhs[[1,1]], self[[1,2]] + rhs[[1,2]],
         self[[2,0]] + rhs[[2,0]], self[[2,1]] + rhs[[2,1]], self[[2,2]] + rhs[[2,2]])
+    }
+}
+
+impl Display for Matrix3D {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[[{}, {}, {}], [{}, {}, {}], [{}, {}, {}]]",
+        self[[0,0]], self[[0,1]], self[[0,2]].to_string(),
+        self[[1,0]], self[[1,1]].to_string(), self[[1,2]].to_string(),
+        self[[2,0]], self[[2,1]].to_string(), self[[2,2]].to_string())
     }
 }
 
