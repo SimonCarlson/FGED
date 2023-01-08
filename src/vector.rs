@@ -8,6 +8,12 @@ pub struct Vector3D {
 }
 
 impl Vector3D {
+    pub fn cross(&self, rhs: &Vector3D) -> Vector3D {
+        Vector3D { x: self.y * rhs.z - self.z * rhs.y,
+            y: self.z * rhs.x - self.x * rhs.z,
+            z: self.x * rhs.y - self.y * rhs.x }
+    }
+
     pub fn dot(&self, rhs: &Vector3D) -> f64 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
@@ -168,5 +174,28 @@ mod tests {
 
         let squared_magnitude = vector1.dot(&vector1);
         assert_approx_eq!(squared_magnitude, f64::powi(vector1.magnitude(), 2));
+    }
+
+    #[test]
+    fn cross_product() {
+        let vector1 = Vector3D::new(0.1, 0.2, 0.3);
+        let vector2 = Vector3D::new(0.4, 0.5, 0.6);
+        let product = vector1.cross(&vector2);
+        assert_approx_eq!(product.x, -0.03);
+        assert_approx_eq!(product.y, 0.06);
+        assert_approx_eq!(product.z, -0.03);
+
+        let vector1 = Vector3D::new(1.0, 1.0, 1.0);
+        let vector2 = Vector3D::new(-1.0, -1.0, -1.0);
+        let vector3 = Vector3D::new(5.0, 5.0, 5.0);
+        let zero_vector = Vector3D::new(0.0, 0.0, 0.0);
+        assert_eq!(vector1.cross(&vector2), zero_vector);
+        assert_eq!(vector1.cross(&vector3), zero_vector);
+        assert_eq!(vector1.cross(&vector1), zero_vector);
+
+        let vector1 = Vector3D::new(1.5, -1.5, 1.5);
+        let vector2 = Vector3D::new(-2.3, 3.3, -5.6);
+        let product = vector1.cross(&vector2);
+        assert_approx_eq!(vector1.dot(&product), 0.0);
     }
 }
