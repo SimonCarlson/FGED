@@ -8,7 +8,7 @@ pub struct Vector3D {
 }
 
 impl Vector3D {
-    pub fn cross(&self, rhs: &Vector3D) -> Vector3D {
+    pub fn cross(&self, rhs: &Vector3D) -> Self {
         Vector3D { x: self.y * rhs.z - self.z * rhs.y,
             y: self.z * rhs.x - self.x * rhs.z,
             z: self.x * rhs.y - self.y * rhs.x }
@@ -27,9 +27,17 @@ impl Vector3D {
         Self { x, y, z }
     }
 
-    pub fn normalize(self) -> Self {
+    pub fn normalize(&self) -> Vector3D {
         let magnitude = self.magnitude();
-        self / magnitude
+        *self / magnitude
+    }
+
+    pub fn project(&self, rhs: &Vector3D) -> Vector3D {
+        *rhs * (self.dot(&rhs) / rhs.dot(&rhs))
+    }
+
+    pub fn reject(&self, rhs: &Vector3D) -> Vector3D {
+        *self - self.project(rhs)
     }
 }
 
@@ -197,5 +205,20 @@ mod tests {
         let vector2 = Vector3D::new(-2.3, 3.3, -5.6);
         let product = vector1.cross(&vector2);
         assert_approx_eq!(vector1.dot(&product), 0.0);
+    }
+
+    #[test]
+    fn projection() {
+        use std::f64::consts::PI;
+        let vector1 = Vector3D::new(PI/4.0, PI/4.0, PI/4.0);
+        let i = Vector3D::new(1.0, 0.0, 0.0);
+        let j = Vector3D::new(0.0, 1.0, 0.0);
+        let k = Vector3D::new(0.0, 0.0, 1.0);
+        let zero_vector = Vector3D::new(0.0, 0.0, 0.0);
+        assert_eq!(vector1.x, vector1.project(&i).x);
+        assert_eq!(vector1.y, vector1.project(&j).y);
+        assert_eq!(vector1.z, vector1.project(&k).z);
+        assert_eq!(i, i.project(&i));
+        assert_eq!(zero_vector, i.project(&j));
     }
 }
