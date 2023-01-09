@@ -221,4 +221,22 @@ mod tests {
         assert_eq!(i, i.project(&i));
         assert_eq!(zero_vector, i.project(&j));
     }
+
+    #[test]
+    fn rejection() {
+        use std::f64::consts::PI;
+        let vector1 = Vector3D::new(PI/4.0, PI/4.0, PI/4.0);
+        let i = Vector3D::new(1.0, 0.0, 0.0);
+        let j = Vector3D::new(0.0, 1.0, 0.0);
+        let k = Vector3D::new(0.0, 0.0, 1.0);
+        let zero_vector = Vector3D::new(0.0, 0.0, 0.0);
+        let rejected_i = vector1.reject(&i);
+        assert_eq!(rejected_i.x, 0.0);
+        assert_eq!(rejected_i.y, PI/4.0);
+        assert_eq!(rejected_i.z, PI/4.0);
+        assert_eq!(0.0, vector1.reject(&k).z);
+        assert_eq!(i.reject(&i), zero_vector);
+        assert_eq!(i, i.reject(&j));
+        assert_eq!(vector1, vector1.project(&i) + vector1.reject(&i));
+    }
 }
