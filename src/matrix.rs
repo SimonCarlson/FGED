@@ -39,9 +39,9 @@ impl Add<Self> for Matrix3D {
 impl Display for Matrix3D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[[{}, {}, {}], [{}, {}, {}], [{}, {}, {}]]",
-        self[[0,0]], self[[0,1]], self[[0,2]].to_string(),
-        self[[1,0]], self[[1,1]].to_string(), self[[1,2]].to_string(),
-        self[[2,0]], self[[2,1]].to_string(), self[[2,2]].to_string())
+            self[[0,0]], self[[0,1]], self[[0,2]],
+            self[[1,0]], self[[1,1]], self[[1,2]],
+            self[[2,0]], self[[2,1]], self[[2,2]])
     }
 }
 
@@ -67,9 +67,9 @@ impl Mul<f64> for Matrix3D {
     }
 }
 
-impl Mul<Matrix3D> for Matrix3D {
+impl Mul<Self> for Matrix3D {
     type Output = Self;
-    fn mul(self, rhs: Matrix3D) -> Self::Output {
+    fn mul(self, rhs: Self) -> Self::Output {
         Matrix3D::new(
             self[[0,0]] * rhs[[0,0]] + self[[0,1]] * rhs[[1,0]] + self[[0,2]] * rhs[[2,0]],
             self[[0,0]] * rhs[[0,1]] + self[[0,1]] * rhs[[1,1]] + self[[0,2]] * rhs[[2,1]],
