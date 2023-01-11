@@ -9,6 +9,15 @@ pub struct Matrix3D {
 }
 
 impl Matrix3D {
+    pub fn determinant(&self) -> f64 {
+        self[[0,0]] * self[[1,1]] * self[[2,2]] +
+        self[[0,1]] * self[[1,2]] * self[[2,0]] +
+        self[[0,2]] * self[[1,0]] * self[[2,1]] -
+        self[[0,0]] * self[[1,2]] * self[[2,1]] -
+        self[[0,1]] * self[[1,0]] * self[[2,2]] -
+        self[[0,2]] * self[[1,1]] * self[[2,0]]
+    }
+
     pub fn new(n00: f64, n01: f64, n02: f64,
         n10: f64, n11: f64, n12: f64,
         n20: f64, n21: f64, n22: f64) -> Self {
@@ -19,6 +28,26 @@ impl Matrix3D {
     pub fn from_vector(a: Vector3D, b: Vector3D, c: Vector3D) -> Self {
         let n = [[a.x, a.y, a.z], [b.x, b.y, b.z], [c.x, c.y, c.z]];
         Self { n }
+    }
+
+    pub fn identity() -> Self {
+        Matrix3D::new(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+    }
+
+    pub fn inverse(&self) -> Matrix3D {
+        let a = self.vector(0);
+        let b = self.vector(1);
+        let c = self.vector(2);
+
+        let r0 = b.cross(&c);
+        let r1 = c.cross(&a);
+        let r2 = a.cross(&b);
+        // @FIXME: Doesn't handle r2.dot(&c) == 0 gracefully
+        let inv_det = 1.0 / r2.dot(&c);
+
+        Matrix3D::new(r0.x * inv_det, r0.y * inv_det, r0.z * inv_det,
+            r1.x * inv_det, r1.y * inv_det, r1.z * inv_det,
+            r2.x * inv_det, r2.y * inv_det, r2.z * inv_det)
     }
 
     pub fn vector(&self, j: usize) -> Vector3D {
@@ -247,5 +276,34 @@ mod tests {
         assert_approx_eq!(vector2[0], 0.1*0.2 + 0.2*0.4 + 0.3*0.6);
         assert_approx_eq!(vector2[1], 0.4*0.2 + 0.5*0.4 + 0.6*0.6);
         assert_approx_eq!(vector2[2], 0.7*0.2 + 0.8*0.4 + 0.9*0.6);
+    }
+
+    #[test]
+    fn determinant() {
+        let matrix = Matrix3D::new(3.0, 5.0, 6.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0);
+        assert_eq!(matrix.determinant(), 3.0);
+        let matrix_with_zero_row = Matrix3D::new(0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
+        assert_eq!(matrix_with_zero_row.determinant(), 0.0);
+        let identity_matrix = Matrix3D::identity();
+        assert_eq!(identity_matrix.determinant(), 1.0);
+        let diagonal_matrix = Matrix3D::new(2.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 2.0);
+        assert_eq!(diagonal_matrix.determinant(), 8.0);
+    }
+
+    #[test]
+    fn matrix_inversion() {
+        let matrix = Matrix3D::new(1.0, 2.0, 3.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0);
+        let inverted_matrix = matrix.inverse();
+        let matrix_product = inverted_matrix * matrix;
+        let identity_matrix = Matrix3D::identity();
+        assert_approx_eq!(matrix_product[[0,0]], identity_matrix[[0,0]]);
+        assert_approx_eq!(matrix_product[[0,1]], identity_matrix[[0,1]]);
+        assert_approx_eq!(matrix_product[[0,2]], identity_matrix[[0,2]]);
+        assert_approx_eq!(matrix_product[[1,0]], identity_matrix[[1,0]]);
+        assert_approx_eq!(matrix_product[[1,1]], identity_matrix[[1,1]]);
+        assert_approx_eq!(matrix_product[[1,2]], identity_matrix[[1,2]]);
+        assert_approx_eq!(matrix_product[[2,0]], identity_matrix[[2,0]]);
+        assert_approx_eq!(matrix_product[[2,1]], identity_matrix[[2,1]]);
+        assert_approx_eq!(matrix_product[[2,2]], identity_matrix[[2,2]]);
     }
 }
