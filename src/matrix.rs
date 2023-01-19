@@ -393,6 +393,12 @@ mod matrix3d_tests {
     use super::*;
     use assert_approx_eq::assert_approx_eq;
 
+    fn elementwise_approx_comparison(result: Matrix3D, expected: Matrix3D) -> () {
+        for (r, e) in std::iter::zip(&result, &expected) {
+            assert_approx_eq!(r, e);
+        }
+    }
+
     #[test]
     fn constructor() {
         let matrix = Matrix3D::new(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9);
@@ -556,6 +562,20 @@ mod matrix3d_tests {
         assert_approx_eq!(matrix_product[[2,0]], identity_matrix[[2,0]]);
         assert_approx_eq!(matrix_product[[2,1]], identity_matrix[[2,1]]);
         assert_approx_eq!(matrix_product[[2,2]], identity_matrix[[2,2]]);
+    }
+
+    #[test]
+    fn rotation() {
+        let matrix = Matrix3D::identity();
+        let x_rot = Matrix3D::make_rotation_x(90.0);
+        let x_expected = Matrix3D::new(1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0);
+        elementwise_approx_comparison(x_rot * matrix, x_expected);
+        let y_rot = Matrix3D::make_rotation_y(90.0);
+        let y_expected = Matrix3D::new(0.0, 0.0, 1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0);
+        elementwise_approx_comparison(y_rot * matrix, y_expected);
+        let z_rot = Matrix3D::make_rotation_z(90.0);
+        let z_expected = Matrix3D::new(0.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        elementwise_approx_comparison(z_rot * matrix, z_expected);
     }
 }
 
