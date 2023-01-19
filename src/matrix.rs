@@ -113,6 +113,38 @@ impl Index<[usize; 2]> for Matrix3D {
     }
 }
 
+impl IntoIterator for &Matrix3D {
+    type Item = f64;
+    type IntoIter = Matrix3DIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Matrix3DIterator {
+            n: self.n,
+            index: 0,
+        }
+    }
+}
+
+pub struct Matrix3DIterator {
+    n: [[f64; 3]; 3],
+    index: usize,
+}
+
+impl Iterator for Matrix3DIterator {
+    type Item = f64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let i = self.index / 3;
+        let j = self.index % 3;
+        if i < 3 && j < 3 {
+            self.index += 1;
+            Some(self.n[j][i])
+        } else {
+            None
+        }
+    }
+}
+
 impl Mul<f64> for Matrix3D {
     type Output = Self;
     fn mul(self, rhs: f64) -> Self::Output {
