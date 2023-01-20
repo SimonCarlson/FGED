@@ -123,7 +123,7 @@ impl Index<[usize; 2]> for Matrix3D {
     }
 }
 
-impl IntoIterator for &Matrix3D {
+impl IntoIterator for Matrix3D {
     type Item = f64;
     type IntoIter = Matrix3DIterator;
 
@@ -402,10 +402,13 @@ impl Sub<Self> for Matrix4D {
 mod matrix3d_tests {
     use super::*;
     use assert_approx_eq::assert_approx_eq;
+    use num_traits::Float;
 
-    fn elementwise_approx_comparison(result: Matrix3D, expected: Matrix3D) -> () {
-        for (r, e) in std::iter::zip(&result, &expected) {
-            assert_approx_eq!(r, e);
+    fn elementwise_approx_comparison<I: IntoIterator>(result: I, expected: I) -> ()
+        where I::Item: Float,
+              I::Item: std::fmt::Debug {
+        for (r, e) in std::iter::zip(result, expected) {
+            assert_approx_eq!(r, e, Float::epsilon());
         }
     }
 
