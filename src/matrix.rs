@@ -589,6 +589,9 @@ mod matrix3d_tests {
         let z_rot = Matrix3D::make_rotation_z(90.0);
         let z_expected = Matrix3D::new(0.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
         elementwise_approx_comparison(z_rot * matrix, z_expected);
+        let a = Vector3D::new(0.5_f64.sqrt(), 0.5_f64.sqrt(), 0.0);
+        let a_rot = Matrix3D::make_rotation(90.0, a);
+        elementwise_approx_comparison(a_rot * matrix.vector(2), Vector3D::new(0.5_f64.sqrt(), -0.5_f64.sqrt(), 0.0));
     }
 }
 
