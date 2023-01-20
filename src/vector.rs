@@ -67,6 +67,37 @@ impl Index<usize> for Vector3D {
     }
 }
 
+impl IntoIterator for Vector3D {
+    type Item = f64;
+    type IntoIter = Vector3DIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Vector3DIterator { x: self.x, y: self.y, z: self.z, index: 0}
+    }
+}
+
+pub struct Vector3DIterator {
+    x: f64,
+    y: f64,
+    z: f64,
+    index: usize,
+}
+
+impl Iterator for Vector3DIterator {
+    type Item = f64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let result = match self.index {
+            0 => Some(self.x),
+            1 => Some(self.y),
+            2 => Some(self.z),
+            _ => None
+        };
+       self.index += 1;
+       result
+    }
+}
+
 impl Mul<f64> for Vector3D {
     type Output = Self;
     fn mul(self, rhs: f64) -> Self::Output {
