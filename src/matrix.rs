@@ -54,6 +54,16 @@ impl Matrix3D {
         }
     }
 
+    pub fn make_rotation(t: f64, a: Vector3D) -> Matrix3D {
+        let r = t.to_radians();
+        let c = r.cos();
+        let s = r.sin();
+        return Matrix3D::new(
+            c + (1.0 - c) * a.x.powi(2), (1.0 - c) * a.x * a.y - s * a.z, (1.0 - c) * a.x * a.z + s * a.y,
+            (1.0 - c) * a.x * a.y + s * a.z, c + (1.0 - c) * a.y.powi(2), (1.0 - c) * a.y * a.z - s * a.x,
+            (1.0 - c) * a.x * a.z - s * a.y, (1.0 - c) * a.y * a.z + s * a.x, c + (1.0 - c) * a.z.powi(2))
+    }
+
     pub fn make_rotation_x(t: f64) -> Matrix3D {
         let r = t.to_radians();
         let c = r.cos();
