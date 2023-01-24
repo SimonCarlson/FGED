@@ -110,6 +110,15 @@ impl Matrix3D {
             (s - 1.0) * a.x * a.z, (s - 1.0) * a.y * a.z, (s - 1.0) * a.z.powi(2) + 1.0)
     }
 
+    pub fn make_skew(theta: f64, a: Vector3D, b: Vector3D) -> Matrix3D {
+        let t = theta.to_radians().tan();
+        Matrix3D::new(
+            a.x * b.x * t + 1.0, a.x * b.y * t, a.x * b.z * t,
+            a.y * b.x * t, a.y * b.y * t + 1.0, a.y * b.z * t,
+            a.z * b.x * t, a.z * b.y * t, a.z * b.z * t + 1.0
+        )
+    }
+
     pub fn vector(&self, j: usize) -> Vector3D {
         let [x, y, z] = self.n[j];
         Vector3D { x, y, z }
@@ -648,6 +657,15 @@ mod matrix3d_tests {
         elementwise_approx_comparison(ds * a, Matrix3D::new(2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0));
         let ds = Matrix3D::make_directional_scale(2.0, Vector3D::new(0.5_f64.sqrt(), 0.5_f64.sqrt(), 0.0));
         elementwise_approx_comparison(ds * a, Matrix3D::new(2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0));
+    }
+
+    #[test]
+    fn skew() {
+        let a = Vector3D::new(1.0, 0.0, 0.0);
+        let b = Vector3D::new(0.0, 1.0, 0.0);
+        let skew = Matrix3D::make_skew(45.0, a, b);
+        let m = Matrix3D::new(1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0);
+        elementwise_approx_comparison(skew * m, Matrix3D::new(3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0));
     }
 }
 
