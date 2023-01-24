@@ -54,11 +54,17 @@ impl Matrix3D {
         }
     }
 
+    pub fn make_involution(a: Vector3D) -> Matrix3D {
+        Matrix3D::new(2.0 * a.x.powi(2) - 1.0, 2.0 * a.x * a.y, 2.0 * a.x * a.z,
+            2.0 * a.x * a.y, 2.0 * a.y.powi(2) - 1.0, 2.0 * a.y * a.z,
+            2.0 * a.x * a.z, 2.0 * a.y * a.z, 2.0 * a.z.powi(2) - 1.0)
+    }
+
     pub fn make_rotation(t: f64, a: Vector3D) -> Matrix3D {
         let r = t.to_radians();
         let c = r.cos();
         let s = r.sin();
-        return Matrix3D::new(
+        Matrix3D::new(
             c + (1.0 - c) * a.x.powi(2), (1.0 - c) * a.x * a.y - s * a.z, (1.0 - c) * a.x * a.z + s * a.y,
             (1.0 - c) * a.x * a.y + s * a.z, c + (1.0 - c) * a.y.powi(2), (1.0 - c) * a.y * a.z - s * a.x,
             (1.0 - c) * a.x * a.z - s * a.y, (1.0 - c) * a.y * a.z + s * a.x, c + (1.0 - c) * a.z.powi(2))
@@ -68,21 +74,27 @@ impl Matrix3D {
         let r = t.to_radians();
         let c = r.cos();
         let s = r.sin();
-        return Matrix3D::new(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c)
+        Matrix3D::new(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c)
     }
 
     pub fn make_rotation_y(t: f64) -> Matrix3D {
         let r = t.to_radians();
         let c = r.cos();
         let s = r.sin();
-        return Matrix3D::new(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c)
+        Matrix3D::new(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c)
     }
 
     pub fn make_rotation_z(t: f64) -> Matrix3D {
         let r = t.to_radians();
         let c = r.cos();
         let s = r.sin();
-        return Matrix3D::new(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0)
+        Matrix3D::new(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0)
+    }
+
+    pub fn make_reflection(a: Vector3D) -> Matrix3D {
+        Matrix3D::new(1.0 - 2.0 * a.x.powi(2), -2.0 * a.x * a.y, -2.0 * a.x * a.z,
+            -2.0 * a.x * a.y, 1.0 - 2.0 * a.y.powi(2), -2.0 * a.y * a.z,
+            -2.0 * a.x * a.z, -2.0 * a.y * a.z, 1.0 - 2.0 * a.z.powi(2))
     }
 
     pub fn vector(&self, j: usize) -> Vector3D {
@@ -592,6 +604,26 @@ mod matrix3d_tests {
         let a = Vector3D::new(0.5_f64.sqrt(), 0.5_f64.sqrt(), 0.0);
         let a_rot = Matrix3D::make_rotation(90.0, a);
         elementwise_approx_comparison(a_rot * matrix.vector(2), Vector3D::new(0.5_f64.sqrt(), -0.5_f64.sqrt(), 0.0));
+    }
+
+    #[test]
+    fn reflection() {
+        use std::f64::consts::PI;
+        let v = Vector3D::new(PI/4.0, 0.0, PI/4.0);
+        let a = Vector3D::new(0.0, 0.0, 1.0);
+        let m_reflect = Matrix3D::make_reflection(a);
+        let v_reflect = m_reflect * v;
+        assert_eq!(v_reflect, Vector3D::new(PI/4.0, 0.0, -PI/4.0));
+    }
+
+    #[test]
+    fn involution() {
+        use std::f64::consts::PI;
+        let v = Vector3D::new(PI/4.0, 0.0, PI/4.0);
+        let a = Vector3D::new(0.0, 0.0, 1.0);
+        let m_involution = Matrix3D::make_involution(a);
+        let v_involution = m_involution * v;
+        assert_eq!(v_involution, Vector3D::new(-PI/4.0, 0.0, PI/4.0));
     }
 }
 
