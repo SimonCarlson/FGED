@@ -438,7 +438,7 @@ mod matrix3d_tests {
     use assert_approx_eq::assert_approx_eq;
     use num_traits::Float;
 
-    fn elementwise_approx_comparison<I: IntoIterator>(result: I, expected: I) -> ()
+    fn element_approx_eq<I: IntoIterator>(result: I, expected: I) -> ()
         where I::Item: Float,
               I::Item: std::fmt::Debug {
         for (r, e) in std::iter::zip(result, expected) {
@@ -616,16 +616,16 @@ mod matrix3d_tests {
         let matrix = Matrix3D::identity();
         let x_rot = Matrix3D::make_rotation_x(90.0);
         let x_expected = Matrix3D::new(1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0);
-        elementwise_approx_comparison(x_rot * matrix, x_expected);
+        element_approx_eq(x_rot * matrix, x_expected);
         let y_rot = Matrix3D::make_rotation_y(90.0);
         let y_expected = Matrix3D::new(0.0, 0.0, 1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0);
-        elementwise_approx_comparison(y_rot * matrix, y_expected);
+        element_approx_eq(y_rot * matrix, y_expected);
         let z_rot = Matrix3D::make_rotation_z(90.0);
         let z_expected = Matrix3D::new(0.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-        elementwise_approx_comparison(z_rot * matrix, z_expected);
+        element_approx_eq(z_rot * matrix, z_expected);
         let a = Vector3D::new(0.5_f64.sqrt(), 0.5_f64.sqrt(), 0.0);
         let a_rot = Matrix3D::make_rotation(90.0, a);
-        elementwise_approx_comparison(a_rot * matrix.vector(2), Vector3D::new(0.5_f64.sqrt(), -0.5_f64.sqrt(), 0.0));
+        element_approx_eq(a_rot * matrix.vector(2), Vector3D::new(0.5_f64.sqrt(), -0.5_f64.sqrt(), 0.0));
     }
 
     #[test]
@@ -652,11 +652,11 @@ mod matrix3d_tests {
     fn scale() {
         let a = Matrix3D::new(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
         let s = Matrix3D::make_scale(2.0, 3.0, 4.0);
-        elementwise_approx_comparison(s * a, Matrix3D::new(2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 4.0, 4.0, 4.0));
+        element_approx_eq(s * a, Matrix3D::new(2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 4.0, 4.0, 4.0));
         let ds = Matrix3D::make_directional_scale(2.0, Vector3D::new(1.0, 0.0, 0.0));
-        elementwise_approx_comparison(ds * a, Matrix3D::new(2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0));
+        element_approx_eq(ds * a, Matrix3D::new(2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0));
         let ds = Matrix3D::make_directional_scale(2.0, Vector3D::new(0.5_f64.sqrt(), 0.5_f64.sqrt(), 0.0));
-        elementwise_approx_comparison(ds * a, Matrix3D::new(2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0));
+        element_approx_eq(ds * a, Matrix3D::new(2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0));
     }
 
     #[test]
@@ -665,7 +665,7 @@ mod matrix3d_tests {
         let b = Vector3D::new(0.0, 1.0, 0.0);
         let skew = Matrix3D::make_skew(45.0, a, b);
         let m = Matrix3D::new(1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0);
-        elementwise_approx_comparison(skew * m, Matrix3D::new(3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0));
+        element_approx_eq(skew * m, Matrix3D::new(3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0));
     }
 }
 
