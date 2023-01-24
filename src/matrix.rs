@@ -55,7 +55,8 @@ impl Matrix3D {
     }
 
     pub fn make_involution(a: Vector3D) -> Matrix3D {
-        Matrix3D::new(2.0 * a.x.powi(2) - 1.0, 2.0 * a.x * a.y, 2.0 * a.x * a.z,
+        Matrix3D::new(
+            2.0 * a.x.powi(2) - 1.0, 2.0 * a.x * a.y, 2.0 * a.x * a.z,
             2.0 * a.x * a.y, 2.0 * a.y.powi(2) - 1.0, 2.0 * a.y * a.z,
             2.0 * a.x * a.z, 2.0 * a.y * a.z, 2.0 * a.z.powi(2) - 1.0)
     }
@@ -92,9 +93,21 @@ impl Matrix3D {
     }
 
     pub fn make_reflection(a: Vector3D) -> Matrix3D {
-        Matrix3D::new(1.0 - 2.0 * a.x.powi(2), -2.0 * a.x * a.y, -2.0 * a.x * a.z,
+        Matrix3D::new(
+            1.0 - 2.0 * a.x.powi(2), -2.0 * a.x * a.y, -2.0 * a.x * a.z,
             -2.0 * a.x * a.y, 1.0 - 2.0 * a.y.powi(2), -2.0 * a.y * a.z,
             -2.0 * a.x * a.z, -2.0 * a.y * a.z, 1.0 - 2.0 * a.z.powi(2))
+    }
+
+    pub fn make_scale(sx: f64, sy: f64, sz: f64) -> Matrix3D {
+        Matrix3D::new(sx, 0.0, 0.0, 0.0, sy, 0.0, 0.0, 0.0, sz)
+    }
+
+    pub fn make_directional_scale(s: f64, a: Vector3D) -> Matrix3D {
+        Matrix3D::new(
+            (s - 1.0) * a.x.powi(2) + 1.0, (s - 1.0) * a.x * a.y, (s - 1.0) * a.x * a.z,
+            (s - 1.0) * a.x * a.y, (s - 1.0) * a.y.powi(2) + 1.0, (s - 1.0) * a.y * a.z,
+            (s - 1.0) * a.x * a.z, (s - 1.0) * a.y * a.z, (s - 1.0) * a.z.powi(2) + 1.0)
     }
 
     pub fn vector(&self, j: usize) -> Vector3D {
@@ -624,6 +637,17 @@ mod matrix3d_tests {
         let m_involution = Matrix3D::make_involution(a);
         let v_involution = m_involution * v;
         assert_eq!(v_involution, Vector3D::new(-PI/4.0, 0.0, PI/4.0));
+    }
+
+    #[test]
+    fn scale() {
+        let a = Matrix3D::new(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+        let s = Matrix3D::make_scale(2.0, 3.0, 4.0);
+        elementwise_approx_comparison(s * a, Matrix3D::new(2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 4.0, 4.0, 4.0));
+        let ds = Matrix3D::make_directional_scale(2.0, Vector3D::new(1.0, 0.0, 0.0));
+        elementwise_approx_comparison(ds * a, Matrix3D::new(2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0));
+        let ds = Matrix3D::make_directional_scale(2.0, Vector3D::new(0.5_f64.sqrt(), 0.5_f64.sqrt(), 0.0));
+        elementwise_approx_comparison(ds * a, Matrix3D::new(2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0));
     }
 }
 
