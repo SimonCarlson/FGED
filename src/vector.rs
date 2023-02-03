@@ -1,3 +1,5 @@
+use crate::Transform4D;
+
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -110,6 +112,16 @@ impl Mul<Vector3D> for f64 {
     fn mul(self, rhs: Vector3D) -> Self::Output {
         rhs * self
     }
+}
+
+impl Mul<Transform4D> for Vector3D {
+    type Output = Vector3D;
+    fn mul(self, rhs: Transform4D) -> Self::Output {
+        Vector3D::new(self.x * rhs[[0,0]] + self.y * rhs[[1,0]] + self.z * rhs[[2,0]],
+            self.x * rhs[[0,1]] + self.y * rhs[[1,1]] + self.z * rhs[[2,1]],
+            self.x * rhs[[0,2]] + self.y * rhs[[1,2]] + self.z * rhs[[2,2]])
+    }
+
 }
 
 impl Neg for Vector3D {
@@ -240,6 +252,14 @@ mod vector3d_tests {
         assert_eq!(new_vector.y, 14.52);
         assert_eq!(new_vector.z, 16.94);
         assert_eq!(new_vector, 2.2 * vector);
+    }
+
+    #[test]
+    fn transform_multiplication() {
+        let t = Transform4D::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0);
+        let v = Vector3D::new(2.0, 3.0, 4.0);
+        let expected = Vector3D::new(53.0, 62.0, 71.0);
+        assert_eq!(expected, v * t);
     }
 
     #[test]
