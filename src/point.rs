@@ -43,7 +43,7 @@ impl Point3D {
 }
 
 impl Add<Vector3D> for Point3D {
-    type Output = Point3D;
+    type Output = Self;
     fn add(self, rhs: Vector3D) -> Self::Output {
         Point3D::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
@@ -53,6 +53,13 @@ impl Sub<Self> for Point3D {
     type Output = Vector3D;
     fn sub(self, rhs: Self) -> Self::Output {
         Vector3D::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
+    }
+}
+
+impl Sub<Vector3D> for Point3D {
+    type Output = Self;
+    fn sub(self, rhs: Vector3D) -> Self::Output {
+        Point3D::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
 }
 

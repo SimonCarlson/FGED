@@ -7,12 +7,22 @@ pub struct Plane {
     pub w: f64,
 }
 
+pub fn line_intersect_plane(p: Point3D, v: Vector3D, f: Plane) -> Option<Point3D> {
+    let fv = f.dot_vector(&v);
+    if fv.abs() > f64::EPSILON {
+        let q = p - v * (f.dot_point(&p) / fv);
+        Some(q)
+    } else {
+        None
+    }
+}
+
 impl Plane {
-    pub fn dot_point(&self, p: Point3D) -> f64 {
+    pub fn dot_point(&self, p: &Point3D) -> f64 {
         self.x * p.x + self.y * p.y + self.z * p.z + self.w
     }
 
-    pub fn dot_vector(&self, v: Vector3D) -> f64 {
+    pub fn dot_vector(&self, v: &Vector3D) -> f64 {
         self.x * v.x + self.y * v.y + self.z * v.z
     }
 
@@ -58,5 +68,19 @@ mod plane_tests {
         assert_approx_eq!(reflected_p.x, -4.0);
         assert_approx_eq!(reflected_p.y, -5.0);
         assert_approx_eq!(reflected_p.z, 0.0);
+    }
+
+    #[test]
+    fn intersection() {
+        let f = Plane::new(1.0, 1.0, 0.0, 0.0);
+        let p = Point3D::new(3.0, 3.0, 0.0);
+        let v = Vector3D::new(0.0, 0.0, 1.0);
+        assert_eq!(None, line_intersect_plane(p, v, f));
+
+        let f = Plane::new(1.0, 1.0, 0.0, 0.0);
+        let p = Point3D::new(-3.0, -4.0, 0.0);
+        let v = Vector3D::new(1.0, 1.0, 0.0);
+        let expected = Point3D::new(0.5, -0.5, 0.0);
+        assert_eq!(expected, line_intersect_plane(p, v, f).unwrap());
     }
 }
