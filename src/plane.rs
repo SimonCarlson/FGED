@@ -2,6 +2,7 @@ use crate::{Vector3D, Point3D, Transform4D};
 
 use std::ops::Mul;
 
+#[derive(Debug, PartialEq)]
 pub struct Plane {
     pub x: f64,
     pub y: f64,
@@ -152,5 +153,15 @@ mod plane_tests {
         let f1 = Plane::new(1.0, 0.0, 0.0, 5.0);
         let f2 = Plane::new(1.0, 0.0, 0.0, 0.0);
         assert_eq!(None, intersect_two_planes(f1, f2));
+    }
+
+    #[test]
+    fn plane_transformation() {
+        let f1 = Plane::new(1.0, 1.0, 0.0, 5.0);
+        let h = Transform4D::new(2.0, 2.0, 2.0, 2.0,
+            0.0, 0.0, 0.0, 0.0,
+            3.0, 3.0, 3.0, 3.0);
+        let expected = Plane::new(2.0, 2.0, 2.0, 7.0);
+        assert_eq!(expected, f1 * h);
     }
 }
