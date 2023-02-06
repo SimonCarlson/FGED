@@ -1,7 +1,7 @@
 use crate::vector::Vector3D;
 use crate::point::Point3D;
 
-use std::ops::Index;
+use std::ops::{Index, Mul};
 
 #[derive(Debug, PartialEq)]
 pub struct Transform4D {
@@ -71,8 +71,19 @@ impl Index<[usize; 2]> for Transform4D {
             panic!("Index {} out of range.", i);
         }
         &self.n[j][i]
-
     }
+}
+
+impl Mul<Point3D> for Transform4D {
+    type Output = Point3D;
+    fn mul(self, rhs: Point3D) -> Self::Output {
+        Point3D::new(
+            self[[0,0]] * rhs.x + self[[0,1]] * rhs.y + self[[0,2]] * rhs.z + self[[0,3]],
+            self[[1,0]] * rhs.x + self[[1,1]] * rhs.y + self[[1,2]] * rhs.z + self[[1,3]],
+            self[[2,0]] * rhs.x + self[[2,1]] * rhs.y + self[[2,2]] * rhs.z + self[[2,3]],
+        )
+    }
+
 }
 
 // impl Index<usize> for Transform4D {
