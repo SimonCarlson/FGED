@@ -1,5 +1,7 @@
 use crate::{Vector3D, Point3D, Transform4D};
 
+use std::ops::Mul;
+
 pub struct Plane {
     pub x: f64,
     pub y: f64,
@@ -27,6 +29,20 @@ pub fn intersect_three_planes(f1: Plane, f2: Plane, f3: Plane) -> Option<Point3D
     if det.abs() > f64::EPSILON {
         let q = (n3.cross(&n2) * f1.w + n1.cross(&n3) * f2.w - n1xn2 * f3.w) / det;
         Some(Point3D::new(q.x, q.y, q.z))
+    } else {
+        None
+    }
+}
+
+pub fn intersect_two_planes(f1: Plane, f2: Plane) -> Option<(Point3D, Vector3D)> {
+    let n1 = f1.get_normal();
+    let n2 = f2.get_normal();
+
+    let v = n1.cross(&n2);
+    let det = v.dot(&v);
+    if det.abs() > f64::EPSILON {
+        let p = (v.cross(&n2) * f1.w + n1.cross(&v) * f2.w) / det;
+        Some((Point3D::new(p.x, p.y, p.z), v))
     } else {
         None
     }
@@ -64,6 +80,18 @@ impl Plane {
         Transform4D::new(x * self.x + 1.0, nxny, nxnz, x * self.w,
             nxny, y * self.y + 1.0, nynz, y * self.w,
             nxnz, nynz, z * self.z + 1.0, z * self.w)
+    }
+}
+
+impl Mul<Transform4D> for Plane {
+    type Output = Plane;
+    fn mul(self, rhs: Transform4D) -> Self::Output {
+        Plane::new(
+            self.x * rhs[[0,0]] + self.y * rhs[[1,0]] + self.z * rhs[[2,0]],
+            self.x * rhs[[0,1]] + self.y * rhs[[1,1]] + self.z * rhs[[2,1]],
+            self.x * rhs[[0,2]] + self.y * rhs[[1,2]] + self.z * rhs[[2,2]],
+            self.x * rhs[[0,3]] + self.y * rhs[[1,3]] + self.z * rhs[[2,3]] + self.w,
+        )
     }
 }
 
@@ -111,5 +139,18 @@ mod plane_tests {
         let f2 = Plane::new(1.0, 0.0, 0.0, 0.0);
         let f3 = Plane::new(0.0, 0.0, 1.0, 0.0);
         assert_eq!(None, intersect_three_planes(f1, f2, f3));
+    }
+
+    #[test]
+    fn two_plane_intersection() {
+        let f1 = Plane::new(1.0, 0.0, 0.0, 0.0);
+        let f2 = Plane::new(0.0, 1.0, 0.0, 0.0);
+        let o = Point3D::origin();
+        let v = Vector3D::new(0.0, 0.0, 1.0);
+        assert_eq!((o, v), intersect_two_planes(f1, f2).unwrap());
+
+        let f1 = Plane::new(1.0, 0.0, 0.0, 5.0);
+        let f2 = Plane::new(1.0, 0.0, 0.0, 0.0);
+        assert_eq!(None, intersect_two_planes(f1, f2));
     }
 }
