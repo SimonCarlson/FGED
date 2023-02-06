@@ -2,7 +2,7 @@ use crate::vector::Vector3D;
 
 use std::ops::{Add, Sub};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Point3D {
     pub x: f64,
     pub y: f64,
@@ -74,5 +74,24 @@ mod point3d_tests {
         let q = Point3D::new(2.0, 3.0, 4.0);
         let expected = Vector3D::new(3.0, 3.0, 3.0);
         assert_eq!(expected, p - q);
+    }
+
+    #[test]
+    fn distance_point_to_line() {
+        let p = Point3D::new(1.0, 0.0, 0.0);
+        let q = Point3D::new(3.0, 1.0, 0.0);
+        let v = Vector3D::new(1.0, 0.0, 0.0);
+        let d = distance_point_line(p, q, v);
+        assert_eq!(1.0, d);
+    }
+
+    #[test]
+    fn distance_line_to_line() {
+        let p1 = Point3D::new(1.0, 0.0, 0.0);
+        let v1 = Vector3D::new(1.0, 0.0, 0.0);
+        let p2 = Point3D::new(0.0, 1.0, 0.0);
+        let v2 = Vector3D::new(1.0, 0.0, 1.0);
+        let d = distance_line_line(p1, v1, p2, v2);
+        assert_eq!(1.0, d);
     }
 }
