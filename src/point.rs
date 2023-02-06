@@ -60,6 +60,8 @@ impl Sub<Self> for Point3D {
 mod point3d_tests {
     use super::*;
 
+    use assert_approx_eq::assert_approx_eq;
+
     #[test]
     fn vector_point_addition() {
         let p = Point3D::new(2.0, 3.0, 4.0);
@@ -79,10 +81,16 @@ mod point3d_tests {
     #[test]
     fn distance_point_to_line() {
         let p = Point3D::new(1.0, 0.0, 0.0);
-        let q = Point3D::new(3.0, 1.0, 0.0);
         let v = Vector3D::new(1.0, 0.0, 0.0);
+        let q = Point3D::new(3.0, 1.0, 0.0);
         let d = distance_point_line(p, q, v);
         assert_eq!(1.0, d);
+
+        let p = Point3D::new(-1.0, 1.5, 0.0);
+        let v = Vector3D::new(1.0, 0.5, 0.0);
+        let q = Point3D::new(-3.0, 0.0, 0.0);
+        let d = distance_point_line(p, q, v);
+        assert_eq!(0.4472135954999579, d);
     }
 
     #[test]
@@ -93,5 +101,12 @@ mod point3d_tests {
         let v2 = Vector3D::new(1.0, 0.0, 1.0);
         let d = distance_line_line(p1, v1, p2, v2);
         assert_eq!(1.0, d);
+
+        let p1 = Point3D::new(-1.0, 2.0, 0.0);
+        let v1 = Vector3D::new(2.0, 3.0, 1.0);
+        let p2 = Point3D::new(3.0, -4.0, 1.0);
+        let v2 = Vector3D::new(1.0, 2.0, 1.0);
+        let d = distance_line_line(p1, v1, p2, v2);
+        assert_approx_eq!(6.3508529610859, d);
     }
 }
