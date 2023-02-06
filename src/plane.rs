@@ -7,11 +7,26 @@ pub struct Plane {
     pub w: f64,
 }
 
-pub fn line_intersect_plane(p: Point3D, v: Vector3D, f: Plane) -> Option<Point3D> {
+pub fn intersect_line_plane(p: Point3D, v: Vector3D, f: Plane) -> Option<Point3D> {
     let fv = f.dot_vector(&v);
     if fv.abs() > f64::EPSILON {
         let q = p - v * (f.dot_point(&p) / fv);
         Some(q)
+    } else {
+        None
+    }
+}
+
+pub fn intersect_three_planes(f1: Plane, f2: Plane, f3: Plane) -> Option<Point3D> {
+    let n1 = f1.get_normal();
+    let n2 = f2.get_normal();
+    let n3 = f3.get_normal();
+
+    let n1xn2 = n1.cross(&n2);
+    let det = n1xn2.dot(&n3);
+    if det.abs() > f64::EPSILON {
+        let q = (n3.cross(&n2) * f1.w + n1.cross(&n3) * f2.w - n1xn2 * f3.w) / det;
+        Some(Point3D::new(q.x, q.y, q.z))
     } else {
         None
     }
@@ -71,16 +86,30 @@ mod plane_tests {
     }
 
     #[test]
-    fn intersection() {
+    fn line_plane_intersection() {
         let f = Plane::new(1.0, 1.0, 0.0, 0.0);
         let p = Point3D::new(3.0, 3.0, 0.0);
         let v = Vector3D::new(0.0, 0.0, 1.0);
-        assert_eq!(None, line_intersect_plane(p, v, f));
+        assert_eq!(None, intersect_line_plane(p, v, f));
 
         let f = Plane::new(1.0, 1.0, 0.0, 0.0);
         let p = Point3D::new(-3.0, -4.0, 0.0);
         let v = Vector3D::new(1.0, 1.0, 0.0);
         let expected = Point3D::new(0.5, -0.5, 0.0);
-        assert_eq!(expected, line_intersect_plane(p, v, f).unwrap());
+        assert_eq!(expected, intersect_line_plane(p, v, f).unwrap());
+    }
+
+    #[test]
+    fn three_plane_intersection() {
+        let f1 = Plane::new(1.0, 0.0, 0.0, 0.0);
+        let f2 = Plane::new(0.0, 1.0, 0.0, 0.0);
+        let f3 = Plane::new(0.0, 0.0, 1.0, 0.0);
+        let o = Point3D::origin();
+        assert_eq!(o, intersect_three_planes(f1, f2, f3).unwrap());
+
+        let f1 = Plane::new(1.0, 0.0, 0.0, 5.0);
+        let f2 = Plane::new(1.0, 0.0, 0.0, 0.0);
+        let f3 = Plane::new(0.0, 0.0, 1.0, 0.0);
+        assert_eq!(None, intersect_three_planes(f1, f2, f3));
     }
 }

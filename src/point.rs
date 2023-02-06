@@ -37,6 +37,9 @@ pub fn distance_line_line(p1: Point3D, v1: Vector3D, p2: Point3D, v2: Vector3D) 
 }
 
 impl Point3D {
+    pub fn origin() -> Self {
+        Self { x: 0.0, y: 0.0, z: 0.0 }
+    }
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
