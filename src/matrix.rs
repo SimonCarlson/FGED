@@ -5,29 +5,30 @@ use std::ops::{Add, Index, Mul, Sub};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Matrix3D {
-    n: [[f64; 3]; 3],
+    n: [Vector3D; 3],
 }
 
 impl Matrix3D {
     pub fn determinant(&self) -> f64 {
-        self[[0,0]] * self[[1,1]] * self[[2,2]] +
-        self[[0,1]] * self[[1,2]] * self[[2,0]] +
-        self[[0,2]] * self[[1,0]] * self[[2,1]] -
-        self[[0,0]] * self[[1,2]] * self[[2,1]] -
-        self[[0,1]] * self[[1,0]] * self[[2,2]] -
-        self[[0,2]] * self[[1,1]] * self[[2,0]]
+        self[0][0] * self[1][1] * self[2][2] +
+        self[0][1] * self[1][2] * self[2][0] +
+        self[0][2] * self[1][0] * self[2][1] -
+        self[0][0] * self[1][2] * self[2][1] -
+        self[0][1] * self[1][0] * self[2][2] -
+        self[0][2] * self[1][1] * self[2][0]
     }
 
     pub fn new(n00: f64, n01: f64, n02: f64,
         n10: f64, n11: f64, n12: f64,
         n20: f64, n21: f64, n22: f64) -> Self {
-            let n = [[n00, n10, n20], [n01, n11, n21], [n02, n12, n22]];
-            Self { n }
+            let n1 = Vector3D::new(n00, n01, n02);
+            let n2 = Vector3D::new(n10, n11, n12);
+            let n3 = Vector3D::new(n20, n21, n22);
+            Self { n: [n1, n2, n3] }
     }
 
     pub fn from_vector(a: Vector3D, b: Vector3D, c: Vector3D) -> Self {
-        let n = [[a.x, a.y, a.z], [b.x, b.y, b.z], [c.x, c.y, c.z]];
-        Self { n }
+        Self { n: [a, b, c] }
     }
 
     pub fn identity() -> Self {
@@ -36,9 +37,9 @@ impl Matrix3D {
 
     // @FIXME: Option or Result?
     pub fn inverse(&self) -> Option<Matrix3D> {
-        let a = self.vector(0);
-        let b = self.vector(1);
-        let c = self.vector(2);
+        let a = self[0];
+        let b = self[1];
+        let c = self[2];
 
         let r0 = b.cross(&c);
         let r1 = c.cross(&a);
@@ -48,9 +49,9 @@ impl Matrix3D {
             None
         } else {
             let inv_det = 1.0 / product;
-            Some(Matrix3D::new(r0.x * inv_det, r0.y * inv_det, r0.z * inv_det,
-                r1.x * inv_det, r1.y * inv_det, r1.z * inv_det,
-                r2.x * inv_det, r2.y * inv_det, r2.z * inv_det))
+            Some(Matrix3D::new(r0.x * inv_det, r1.x * inv_det, r2.x * inv_det,
+                r0.y * inv_det, r1.y * inv_det, r2.y * inv_det,
+                r0.z * inv_det, r1.z * inv_det, r2.z * inv_det))
         }
     }
 
@@ -118,42 +119,30 @@ impl Matrix3D {
             a.z * b.x * t, a.z * b.y * t, a.z * b.z * t + 1.0
         )
     }
-
-    pub fn vector(&self, j: usize) -> Vector3D {
-        let [x, y, z] = self.n[j];
-        Vector3D { x, y, z }
-    }
 }
 
 impl Add<Self> for Matrix3D {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
-       Matrix3D::new(self[[0,0]] + rhs[[0,0]], self[[0,1]] + rhs[[0,1]], self[[0,2]] + rhs[[0,2]],
-        self[[1,0]] + rhs[[1,0]], self[[1,1]] + rhs[[1,1]], self[[1,2]] + rhs[[1,2]],
-        self[[2,0]] + rhs[[2,0]], self[[2,1]] + rhs[[2,1]], self[[2,2]] + rhs[[2,2]])
+       Matrix3D::new(self[0][0] + rhs[0][0], self[0][1] + rhs[0][1], self[0][2] + rhs[0][2],
+        self[1][0] + rhs[1][0], self[1][1] + rhs[1][1], self[1][2] + rhs[1][2],
+        self[2][0] + rhs[2][0], self[2][1] + rhs[2][1], self[2][2] + rhs[2][2])
     }
 }
 
 impl Display for Matrix3D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[[{}, {}, {}], [{}, {}, {}], [{}, {}, {}]]",
-            self[[0,0]], self[[0,1]], self[[0,2]],
-            self[[1,0]], self[[1,1]], self[[1,2]],
-            self[[2,0]], self[[2,1]], self[[2,2]])
+            self[0][0], self[0][1], self[0][2],
+            self[1][0], self[1][1], self[1][2],
+            self[2][0], self[2][1], self[2][2])
     }
 }
 
-impl Index<[usize; 2]> for Matrix3D {
-    type Output = f64;
-    fn index(&self, index: [usize; 2]) -> &Self::Output {
-        let [i, j] = index;
-        if i > 2 {
-            panic!("Index {} out of range", i);
-        }
-        if j > 2 {
-            panic!("Index {} out of range", j);
-        }
-        &self.n[j][i]
+impl Index<usize> for Matrix3D {
+    type Output = Vector3D;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.n[index]
     }
 }
 
@@ -170,7 +159,7 @@ impl IntoIterator for Matrix3D {
 }
 
 pub struct Matrix3DIterator {
-    n: [[f64; 3]; 3],
+    n: [Vector3D; 3],
     index: usize,
 }
 
@@ -192,9 +181,9 @@ impl Iterator for Matrix3DIterator {
 impl Mul<f64> for Matrix3D {
     type Output = Self;
     fn mul(self, rhs: f64) -> Self::Output {
-        Matrix3D::new(self[[0,0]] * rhs, self[[0,1]] * rhs, self[[0,2]] * rhs,
-        self[[1,0]] * rhs, self[[1,1]] * rhs, self[[1,2]] * rhs,
-        self[[2,0]] * rhs, self[[2,1]] * rhs, self[[2,2]] * rhs)
+        Matrix3D::new(self[0][0] * rhs, self[0][1] * rhs, self[0][2] * rhs,
+        self[1][0] * rhs, self[1][1] * rhs, self[1][2] * rhs,
+        self[2][0] * rhs, self[2][1] * rhs, self[2][2] * rhs)
     }
 }
 
@@ -209,24 +198,24 @@ impl Mul<Self> for Matrix3D {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self::Output {
         Matrix3D::new(
-            self[[0,0]] * rhs[[0,0]] + self[[0,1]] * rhs[[1,0]] + self[[0,2]] * rhs[[2,0]],
-            self[[0,0]] * rhs[[0,1]] + self[[0,1]] * rhs[[1,1]] + self[[0,2]] * rhs[[2,1]],
-            self[[0,0]] * rhs[[0,2]] + self[[0,1]] * rhs[[1,2]] + self[[0,2]] * rhs[[2,2]],
-            self[[1,0]] * rhs[[0,0]] + self[[1,1]] * rhs[[1,0]] + self[[1,2]] * rhs[[2,0]],
-            self[[1,0]] * rhs[[0,1]] + self[[1,1]] * rhs[[1,1]] + self[[1,2]] * rhs[[2,1]],
-            self[[1,0]] * rhs[[0,2]] + self[[1,1]] * rhs[[1,2]] + self[[1,2]] * rhs[[2,2]],
-            self[[2,0]] * rhs[[0,0]] + self[[2,1]] * rhs[[1,0]] + self[[2,2]] * rhs[[2,0]],
-            self[[2,0]] * rhs[[0,1]] + self[[2,1]] * rhs[[1,1]] + self[[2,2]] * rhs[[2,1]],
-            self[[2,0]] * rhs[[0,2]] + self[[2,1]] * rhs[[1,2]] + self[[2,2]] * rhs[[2,2]])
+            self[0][0] * rhs[0][0] + self[0][1] * rhs[1][0] + self[0][2] * rhs[2][0],
+            self[0][0] * rhs[0][1] + self[0][1] * rhs[1][1] + self[0][2] * rhs[2][1],
+            self[0][0] * rhs[0][2] + self[0][1] * rhs[1][2] + self[0][2] * rhs[2][2],
+            self[1][0] * rhs[0][0] + self[1][1] * rhs[1][0] + self[1][2] * rhs[2][0],
+            self[1][0] * rhs[0][1] + self[1][1] * rhs[1][1] + self[1][2] * rhs[2][1],
+            self[1][0] * rhs[0][2] + self[1][1] * rhs[1][2] + self[1][2] * rhs[2][2],
+            self[2][0] * rhs[0][0] + self[2][1] * rhs[1][0] + self[2][2] * rhs[2][0],
+            self[2][0] * rhs[0][1] + self[2][1] * rhs[1][1] + self[2][2] * rhs[2][1],
+            self[2][0] * rhs[0][2] + self[2][1] * rhs[1][2] + self[2][2] * rhs[2][2])
     }
 }
 
 impl Mul<Vector3D> for Matrix3D {
     type Output = Vector3D;
     fn mul(self, rhs: Vector3D) -> Self::Output {
-        Vector3D::new(self[[0,0]] * rhs.x + self[[0,1]] * rhs.y + self[[0,2]] * rhs.z,
-            self[[1,0]] * rhs.x + self[[1,1]] * rhs.y + self[[1,2]] * rhs.z,
-            self[[2,0]] * rhs.x + self[[2,1]] * rhs.y + self[[2,2]] * rhs.z) 
+        Vector3D::new(self[0][0] * rhs.x + self[0][1] * rhs.y + self[0][2] * rhs.z,
+            self[1][0] * rhs.x + self[1][1] * rhs.y + self[1][2] * rhs.z,
+            self[2][0] * rhs.x + self[2][1] * rhs.y + self[2][2] * rhs.z) 
     }
 }
 
@@ -234,9 +223,9 @@ impl Mul<Vector3D> for Matrix3D {
 impl Sub<Self> for Matrix3D {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self::Output {
-       Matrix3D::new(self[[0,0]] - rhs[[0,0]], self[[0,1]] - rhs[[0,1]], self[[0,2]] - rhs[[0,2]],
-        self[[1,0]] - rhs[[1,0]], self[[1,1]] - rhs[[1,1]], self[[1,2]] - rhs[[1,2]],
-        self[[2,0]] - rhs[[2,0]], self[[2,1]] - rhs[[2,1]], self[[2,2]] - rhs[[2,2]])
+       Matrix3D::new(self[0][0] - rhs[0][0], self[0][1] - rhs[0][1], self[0][2] - rhs[0][2],
+        self[1][0] - rhs[1][0], self[1][1] - rhs[1][1], self[1][2] - rhs[1][2],
+        self[2][0] - rhs[2][0], self[2][1] - rhs[2][1], self[2][2] - rhs[2][2])
     }
 }
 
@@ -449,15 +438,15 @@ mod matrix3d_tests {
     #[test]
     fn constructor() {
         let matrix = Matrix3D::new(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9);
-        assert_eq!(matrix.n[0][0], 0.1);
-        assert_eq!(matrix.n[0][1], 0.4);
-        assert_eq!(matrix.n[0][2], 0.7);
-        assert_eq!(matrix.n[1][0], 0.2);
-        assert_eq!(matrix.n[1][1], 0.5);
-        assert_eq!(matrix.n[1][2], 0.8);
-        assert_eq!(matrix.n[2][0], 0.3);
-        assert_eq!(matrix.n[2][1], 0.6);
-        assert_eq!(matrix.n[2][2], 0.9);
+        assert_eq!(matrix[0][0], 0.1);
+        assert_eq!(matrix[0][1], 0.2);
+        assert_eq!(matrix[0][2], 0.3);
+        assert_eq!(matrix[1][0], 0.4);
+        assert_eq!(matrix[1][1], 0.5);
+        assert_eq!(matrix[1][2], 0.6);
+        assert_eq!(matrix[2][0], 0.7);
+        assert_eq!(matrix[2][1], 0.8);
+        assert_eq!(matrix[2][2], 0.9);
     }
 
     #[test]
@@ -466,29 +455,29 @@ mod matrix3d_tests {
         let vector2 = Vector3D::new(0.4, 0.5, 0.6);
         let vector3 = Vector3D::new(0.7, 0.8, 0.9);
         let matrix = Matrix3D::from_vector(vector1, vector2, vector3);
-        assert_eq!(matrix.n[0][0], 0.1);
-        assert_eq!(matrix.n[0][1], 0.2);
-        assert_eq!(matrix.n[0][2], 0.3);
-        assert_eq!(matrix.n[1][0], 0.4);
-        assert_eq!(matrix.n[1][1], 0.5);
-        assert_eq!(matrix.n[1][2], 0.6);
-        assert_eq!(matrix.n[2][0], 0.7);
-        assert_eq!(matrix.n[2][1], 0.8);
-        assert_eq!(matrix.n[2][2], 0.9);
+        assert_eq!(matrix[0][0], 0.1);
+        assert_eq!(matrix[0][1], 0.2);
+        assert_eq!(matrix[0][2], 0.3);
+        assert_eq!(matrix[1][0], 0.4);
+        assert_eq!(matrix[1][1], 0.5);
+        assert_eq!(matrix[1][2], 0.6);
+        assert_eq!(matrix[2][0], 0.7);
+        assert_eq!(matrix[2][1], 0.8);
+        assert_eq!(matrix[2][2], 0.9);
     }
 
     #[test]
     fn index() {
         let matrix = Matrix3D::new(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9);
-        assert_eq!(matrix[[0,0]], 0.1);
-        assert_eq!(matrix[[0,1]], 0.2);
-        assert_eq!(matrix[[0,2]], 0.3);
-        assert_eq!(matrix[[1,0]], 0.4);
-        assert_eq!(matrix[[1,1]], 0.5);
-        assert_eq!(matrix[[1,2]], 0.6);
-        assert_eq!(matrix[[2,0]], 0.7);
-        assert_eq!(matrix[[2,1]], 0.8);
-        assert_eq!(matrix[[2,2]], 0.9);
+        assert_eq!(matrix[0][0], 0.1);
+        assert_eq!(matrix[0][1], 0.2);
+        assert_eq!(matrix[0][2], 0.3);
+        assert_eq!(matrix[1][0], 0.4);
+        assert_eq!(matrix[1][1], 0.5);
+        assert_eq!(matrix[1][2], 0.6);
+        assert_eq!(matrix[2][0], 0.7);
+        assert_eq!(matrix[2][1], 0.8);
+        assert_eq!(matrix[2][2], 0.9);
     }
 
     #[test]
@@ -497,30 +486,30 @@ mod matrix3d_tests {
         let vector2 = Vector3D::new(0.4, 0.5, 0.6);
         let vector3 = Vector3D::new(0.7, 0.8, 0.9);
         let matrix = Matrix3D::from_vector(vector1, vector2, vector3);
-        assert_eq!(matrix.vector(0)[0], 0.1);
-        assert_eq!(matrix.vector(0)[1], 0.2);
-        assert_eq!(matrix.vector(0)[2], 0.3);
-        assert_eq!(matrix.vector(1)[0], 0.4);
-        assert_eq!(matrix.vector(1)[1], 0.5);
-        assert_eq!(matrix.vector(1)[2], 0.6);
-        assert_eq!(matrix.vector(2)[0], 0.7);
-        assert_eq!(matrix.vector(2)[1], 0.8);
-        assert_eq!(matrix.vector(2)[2], 0.9);
+        assert_eq!(matrix[0][0], 0.1);
+        assert_eq!(matrix[0][1], 0.2);
+        assert_eq!(matrix[0][2], 0.3);
+        assert_eq!(matrix[1][0], 0.4);
+        assert_eq!(matrix[1][1], 0.5);
+        assert_eq!(matrix[1][2], 0.6);
+        assert_eq!(matrix[2][0], 0.7);
+        assert_eq!(matrix[2][1], 0.8);
+        assert_eq!(matrix[2][2], 0.9);
     }
 
     #[test]
     fn matrix_addition() {
         let matrix1 = Matrix3D::new(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9);
         let matrix2 = matrix1 + matrix1;
-        assert_approx_eq!(matrix2[[0,0]], 0.2);
-        assert_approx_eq!(matrix2[[0,1]], 0.4);
-        assert_approx_eq!(matrix2[[0,2]], 0.6);
-        assert_approx_eq!(matrix2[[1,0]], 0.8);
-        assert_approx_eq!(matrix2[[1,1]], 1.0);
-        assert_approx_eq!(matrix2[[1,2]], 1.2);
-        assert_approx_eq!(matrix2[[2,0]], 1.4);
-        assert_approx_eq!(matrix2[[2,1]], 1.6);
-        assert_approx_eq!(matrix2[[2,2]], 1.8);
+        assert_approx_eq!(matrix2[0][0], 0.2);
+        assert_approx_eq!(matrix2[0][1], 0.4);
+        assert_approx_eq!(matrix2[0][2], 0.6);
+        assert_approx_eq!(matrix2[1][0], 0.8);
+        assert_approx_eq!(matrix2[1][1], 1.0);
+        assert_approx_eq!(matrix2[1][2], 1.2);
+        assert_approx_eq!(matrix2[2][0], 1.4);
+        assert_approx_eq!(matrix2[2][1], 1.6);
+        assert_approx_eq!(matrix2[2][2], 1.8);
     }
 
     #[test]
@@ -528,30 +517,30 @@ mod matrix3d_tests {
         let matrix1 = Matrix3D::new(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9);
         let matrix2 = Matrix3D::new(0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8);
         let matrix3 = matrix2 - matrix1;
-        assert_approx_eq!(matrix3[[0,0]], 0.1);
-        assert_approx_eq!(matrix3[[0,1]], 0.2);
-        assert_approx_eq!(matrix3[[0,2]], 0.3);
-        assert_approx_eq!(matrix3[[1,0]], 0.4);
-        assert_approx_eq!(matrix3[[1,1]], 0.5);
-        assert_approx_eq!(matrix3[[1,2]], 0.6);
-        assert_approx_eq!(matrix3[[2,0]], 0.7);
-        assert_approx_eq!(matrix3[[2,1]], 0.8);
-        assert_approx_eq!(matrix3[[2,2]], 0.9);
+        assert_approx_eq!(matrix3[0][0], 0.1);
+        assert_approx_eq!(matrix3[0][1], 0.2);
+        assert_approx_eq!(matrix3[0][2], 0.3);
+        assert_approx_eq!(matrix3[1][0], 0.4);
+        assert_approx_eq!(matrix3[1][1], 0.5);
+        assert_approx_eq!(matrix3[1][2], 0.6);
+        assert_approx_eq!(matrix3[2][0], 0.7);
+        assert_approx_eq!(matrix3[2][1], 0.8);
+        assert_approx_eq!(matrix3[2][2], 0.9);
     }
 
     #[test]
     fn scalar_multiplication() {
         let matrix1 = Matrix3D::new(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9);
         let matrix2 = matrix1 * 5.0;
-        assert_approx_eq!(matrix2[[0,0]], 0.5);
-        assert_approx_eq!(matrix2[[0,1]], 1.0);
-        assert_approx_eq!(matrix2[[0,2]], 1.5);
-        assert_approx_eq!(matrix2[[1,0]], 2.0);
-        assert_approx_eq!(matrix2[[1,1]], 2.5);
-        assert_approx_eq!(matrix2[[1,2]], 3.0);
-        assert_approx_eq!(matrix2[[2,0]], 3.5);
-        assert_approx_eq!(matrix2[[2,1]], 4.0);
-        assert_approx_eq!(matrix2[[2,2]], 4.5);
+        assert_approx_eq!(matrix2[0][0], 0.5);
+        assert_approx_eq!(matrix2[0][1], 1.0);
+        assert_approx_eq!(matrix2[0][2], 1.5);
+        assert_approx_eq!(matrix2[1][0], 2.0);
+        assert_approx_eq!(matrix2[1][1], 2.5);
+        assert_approx_eq!(matrix2[1][2], 3.0);
+        assert_approx_eq!(matrix2[2][0], 3.5);
+        assert_approx_eq!(matrix2[2][1], 4.0);
+        assert_approx_eq!(matrix2[2][2], 4.5);
         assert_eq!(matrix2, 5.0 * matrix1);
     }
 
@@ -561,15 +550,15 @@ mod matrix3d_tests {
         let matrix2 = Matrix3D::new(0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8);
         let matrix3 = matrix1 * matrix2;
         let expected = Matrix3D::new(0.6, 0.72, 0.84, 1.32, 1.62, 1.92, 2.04, 2.52, 3.0);
-        assert_approx_eq!(matrix3[[0,0]], expected[[0,0]]);
-        assert_approx_eq!(matrix3[[0,1]], expected[[0,1]]);
-        assert_approx_eq!(matrix3[[0,2]], expected[[0,2]]);
-        assert_approx_eq!(matrix3[[1,0]], expected[[1,0]]);
-        assert_approx_eq!(matrix3[[1,1]], expected[[1,1]]);
-        assert_approx_eq!(matrix3[[1,2]], expected[[1,2]]);
-        assert_approx_eq!(matrix3[[2,0]], expected[[2,0]]);
-        assert_approx_eq!(matrix3[[2,1]], expected[[2,1]]);
-        assert_approx_eq!(matrix3[[2,2]], expected[[2,2]]);
+        assert_approx_eq!(matrix3[0][0], expected[0][0]);
+        assert_approx_eq!(matrix3[0][1], expected[0][1]);
+        assert_approx_eq!(matrix3[0][2], expected[0][2]);
+        assert_approx_eq!(matrix3[1][0], expected[1][0]);
+        assert_approx_eq!(matrix3[1][1], expected[1][1]);
+        assert_approx_eq!(matrix3[1][2], expected[1][2]);
+        assert_approx_eq!(matrix3[2][0], expected[2][0]);
+        assert_approx_eq!(matrix3[2][1], expected[2][1]);
+        assert_approx_eq!(matrix3[2][2], expected[2][2]);
     }
 
     #[test]
@@ -600,15 +589,15 @@ mod matrix3d_tests {
         let inverted_matrix = matrix.inverse().unwrap();
         let matrix_product = inverted_matrix * matrix;
         let identity_matrix = Matrix3D::identity();
-        assert_approx_eq!(matrix_product[[0,0]], identity_matrix[[0,0]]);
-        assert_approx_eq!(matrix_product[[0,1]], identity_matrix[[0,1]]);
-        assert_approx_eq!(matrix_product[[0,2]], identity_matrix[[0,2]]);
-        assert_approx_eq!(matrix_product[[1,0]], identity_matrix[[1,0]]);
-        assert_approx_eq!(matrix_product[[1,1]], identity_matrix[[1,1]]);
-        assert_approx_eq!(matrix_product[[1,2]], identity_matrix[[1,2]]);
-        assert_approx_eq!(matrix_product[[2,0]], identity_matrix[[2,0]]);
-        assert_approx_eq!(matrix_product[[2,1]], identity_matrix[[2,1]]);
-        assert_approx_eq!(matrix_product[[2,2]], identity_matrix[[2,2]]);
+        assert_approx_eq!(matrix_product[0][0], identity_matrix[0][0]);
+        assert_approx_eq!(matrix_product[0][1], identity_matrix[0][1]);
+        assert_approx_eq!(matrix_product[0][2], identity_matrix[0][2]);
+        assert_approx_eq!(matrix_product[1][0], identity_matrix[1][0]);
+        assert_approx_eq!(matrix_product[1][1], identity_matrix[1][1]);
+        assert_approx_eq!(matrix_product[1][2], identity_matrix[1][2]);
+        assert_approx_eq!(matrix_product[2][0], identity_matrix[2][0]);
+        assert_approx_eq!(matrix_product[2][1], identity_matrix[2][1]);
+        assert_approx_eq!(matrix_product[2][2], identity_matrix[2][2]);
     }
 
     #[test]
@@ -625,7 +614,7 @@ mod matrix3d_tests {
         element_approx_eq(z_rot * matrix, z_expected);
         let a = Vector3D::new(0.5_f64.sqrt(), 0.5_f64.sqrt(), 0.0);
         let a_rot = Matrix3D::make_rotation(90.0, a);
-        element_approx_eq(a_rot * matrix.vector(2), Vector3D::new(0.5_f64.sqrt(), -0.5_f64.sqrt(), 0.0));
+        element_approx_eq(a_rot * matrix[2], Vector3D::new(0.5_f64.sqrt(), -0.5_f64.sqrt(), 0.0));
     }
 
     #[test]
