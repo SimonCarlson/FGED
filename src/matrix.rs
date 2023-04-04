@@ -35,7 +35,6 @@ impl Matrix3D {
         Matrix3D::new(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
     }
 
-    // @FIXME: Option or Result?
     pub fn inverse(&self) -> Option<Matrix3D> {
         let a = self[0];
         let b = self[1];

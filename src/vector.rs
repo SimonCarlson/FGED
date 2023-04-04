@@ -1,6 +1,7 @@
 use crate::Transform4D;
 
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
+use std::convert::From;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vector3D {
@@ -54,6 +55,12 @@ impl Div<f64> for Vector3D {
     type Output = Self;
     fn div(self, rhs: f64) -> Self::Output {
         Vector3D::new(self.x / rhs, self.y / rhs, self.z / rhs)
+    }
+}
+
+impl From<Vector4D> for Vector3D {
+    fn from(v: Vector4D) -> Self {
+        Vector3D::new(v.x, v.y, v.z)
     }
 }
 
@@ -117,9 +124,10 @@ impl Mul<Vector3D> for f64 {
 impl Mul<Transform4D> for Vector3D {
     type Output = Vector3D;
     fn mul(self, rhs: Transform4D) -> Self::Output {
-        Vector3D::new(self.x * rhs[[0,0]] + self.y * rhs[[1,0]] + self.z * rhs[[2,0]],
-            self.x * rhs[[0,1]] + self.y * rhs[[1,1]] + self.z * rhs[[2,1]],
-            self.x * rhs[[0,2]] + self.y * rhs[[1,2]] + self.z * rhs[[2,2]])
+        Vector3D::new(
+            self.x * rhs[0][0] + self.y * rhs[1][0] + self.z * rhs[2][0],
+            self.x * rhs[0][1] + self.y * rhs[1][1] + self.z * rhs[2][1],
+            self.x * rhs[0][2] + self.y * rhs[1][2] + self.z * rhs[2][2])
     }
 
 }

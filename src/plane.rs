@@ -88,10 +88,10 @@ impl Mul<Transform4D> for Plane {
     type Output = Plane;
     fn mul(self, rhs: Transform4D) -> Self::Output {
         Plane::new(
-            self.x * rhs[[0,0]] + self.y * rhs[[1,0]] + self.z * rhs[[2,0]],
-            self.x * rhs[[0,1]] + self.y * rhs[[1,1]] + self.z * rhs[[2,1]],
-            self.x * rhs[[0,2]] + self.y * rhs[[1,2]] + self.z * rhs[[2,2]],
-            self.x * rhs[[0,3]] + self.y * rhs[[1,3]] + self.z * rhs[[2,3]] + self.w,
+            self.x * rhs[0][0] + self.y * rhs[1][0] + self.z * rhs[2][0],
+            self.x * rhs[0][1] + self.y * rhs[1][1] + self.z * rhs[2][1],
+            self.x * rhs[0][2] + self.y * rhs[1][2] + self.z * rhs[2][2],
+            self.x * rhs[0][3] + self.y * rhs[1][3] + self.z * rhs[2][3] + self.w,
         )
     }
 }
