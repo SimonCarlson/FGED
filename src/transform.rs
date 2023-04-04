@@ -121,6 +121,17 @@ impl Mul<Self> for Transform4D {
     }
 }
 
+impl Mul<Vector3D> for Transform4D {
+    type Output = Vector3D;
+    fn mul(self, rhs: Vector3D) -> Self::Output {
+        Vector3D::new(
+            self[0][0] * rhs.x + self[0][1] * rhs.y + self[0][2] * rhs.z,
+            self[1][0] * rhs.x + self[1][1] * rhs.y + self[1][2] * rhs.z,
+            self[2][0] * rhs.x + self[2][1] * rhs.y + self[2][2] * rhs.z,
+        )
+    }
+}
+
 #[cfg(test)]
 mod transform4d_tests {
     use crate::Matrix4D;
